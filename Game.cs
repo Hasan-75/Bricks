@@ -19,7 +19,7 @@ public class Game
     public static Game InitiateGame()
     {
         var board = CreateBoard(size: (50, 25));
-        var bar = CreateBar(initialPosition: (board.Center.X, board.End.Y - 3), length: 7);
+        var bar = CreateBar(initialPosition: (board.Center.X, board.End.Y - 3), length: 9);
         var ball = CreateBall(initialPosition: bar.CenterPosition - (0, 1), initialVelocity: (2, -1));
 
         return new Game(board, bar, ball);
@@ -31,7 +31,7 @@ public class Game
         DrawBoard();
         DrawBar();
         DrawBall();
-        StartLoop();
+        Loop();
     }
 
     private static Board CreateBoard(Vector2 size) => new ()
@@ -56,10 +56,12 @@ public class Game
         isRunning = false;
     }
 
-    private void StartLoop()
+    private void Loop()
     {
         var key = ConsoleKey.None;
         Console.CursorVisible = false;
+
+        int frameCounter = 0;
 
         while (isRunning)
         {
@@ -68,9 +70,13 @@ public class Game
                 ProcessInput(Console.ReadKey(true).Key);
             }
 
-            MoveBall();
+            if (frameCounter % 5 == 0)
+            {
+                MoveBall();
+            }
 
-            Thread.Sleep(50); // ~5 FPS
+            frameCounter = ++frameCounter % 25;
+            Thread.Sleep(10);
         }
     }
 
@@ -97,7 +103,12 @@ public class Game
 
         var nextPosition = ball.Position + ball.Velocity;
 
-        if (nextPosition.Y == bar.CenterPosition.Y && nextPosition.X >= bar.StartX && nextPosition.X <= bar.EndX)
+        var isHittingBar =
+            GeometryUtils.DoSegmentsIntersect(
+                new(bar.Start, bar.End),
+                new(ball.Position, nextPosition));
+
+        if (isHittingBar)
         {
             var hitAccuracy = bar.CenterPosition.X - nextPosition.X;
 
@@ -151,7 +162,7 @@ public class Game
         Print("==");
     }
 
-    public void DrawBall()
+    private void DrawBall()
     {
         Console.SetCursorPosition(ball.Position.X, ball.Position.Y);
         Console.Write("o");
