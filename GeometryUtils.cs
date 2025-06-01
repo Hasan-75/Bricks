@@ -4,11 +4,11 @@ public static class GeometryUtils
 {
     public static bool DoSegmentsIntersect(Segment segmentA, Segment segmentB)
     {
-        var aStart = segmentA.start;
-        var aVector = segmentA.end - segmentA.start;
+        var aStart = segmentA.Start;
+        var aVector = segmentA.End - segmentA.Start;
 
-        var bStart = segmentB.start;
-        var bVector = segmentB.end - segmentB.start;
+        var bStart = segmentB.Start;
+        var bVector = segmentB.End - segmentB.Start;
 
         var startDiff = bStart - aStart;
 
