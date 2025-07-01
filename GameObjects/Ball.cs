@@ -1,4 +1,6 @@
-﻿namespace Bricks;
+﻿using Bricks.Geometry;
+
+namespace Bricks;
 
 public class Ball
 {

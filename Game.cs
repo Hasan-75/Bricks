@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Bricks.Geometry;
 
 namespace Bricks;
 
@@ -8,19 +9,28 @@ public class Game
     private Board board;
     private Bar bar;
     private Ball ball;
+    private List<Brick> bricks;
 
     public Game(Board board, Bar bar, Ball ball)
     {
         this.board = board;
-        this.bar = bar;
-        this.ball = ball;
+        this.bar   = bar;
+        this.ball  = ball;
+
+        this.bricks = CreateBricks(
+            brickSize : 2,
+            gap       : 2,
+            numRows   : 4,
+            startRow  : 2,
+            boardLeft : board.Start.X + 1,
+            boardRight: board.End.X - 1);
     }
 
     public static Game InitiateGame()
     {
         var board = CreateBoard(size: (50, 25));
-        var bar = CreateBar(initialPosition: (board.Center.X, board.End.Y - 3), length: 9);
-        var ball = CreateBall(initialPosition: bar.CenterPosition - (0, 1), initialVelocity: (2, -1));
+        var bar   = CreateBar(initialPosition: (board.Center.X, board.End.Y - 3), length: 9);
+        var ball  = CreateBall(initialPosition: bar.CenterPosition - (0, 1), initialVelocity: (2, -1));
 
         return new Game(board, bar, ball);
     }
@@ -31,6 +41,7 @@ public class Game
         DrawBoard();
         DrawBar();
         DrawBall();
+        DrawBricks();
         Loop();
     }
 
@@ -108,7 +119,15 @@ public class Game
                 new(bar.Start, bar.End),
                 new(ball.Position, nextPosition));
 
-        if (isHittingBar)
+        var hittingBrick = bricks
+            .FirstOrDefault(brick => GeometryUtils.DoSegmentsIntersectWithRectangle(new(ball.Position, nextPosition), brick.Rectangle));
+
+        if (hittingBrick is not null)
+        {
+            RemoveBrick(hittingBrick);
+        }
+
+        if (isHittingBar || hittingBrick is not null)
         {
             var hitAccuracy = bar.CenterPosition.X - nextPosition.X;
 
@@ -214,5 +233,60 @@ public class Game
     {
         Console.Write(item);
         return Console.GetCursorPosition();
+    }
+
+    private List<Brick> CreateBricks(int brickSize, int gap, int numRows, int startRow, int boardLeft, int boardRight)
+    {
+        var bricks = new List<Brick>();
+
+        for (int r = 0; r < numRows; r++)
+        {
+            int row = startRow + r;
+
+            int offset = (r % 2 == 0) ? 0 : (brickSize + 1) / 2;
+            for (int col = boardLeft + offset; col + brickSize - 1 < boardRight; col += brickSize + gap)
+            {
+                bricks.Add(new Brick
+                {
+                    Rectangle = new Rectangle(
+                        Top   : new((col, row),                 (col + brickSize - 1, row)),
+                        Right : new((col + brickSize - 1, row), (col + brickSize - 1, row + 1)),
+                        Bottom: new((col, row + 1),             (col + brickSize - 1, row + 1)),
+                        Left  : new((col, row),                 (col, row + 1))
+                    ),
+                });
+            }
+        }
+
+        return bricks;
+    }
+
+    private void DrawBricks()
+    {
+        foreach (var brick in bricks)
+        {
+            for (int i = 0; i < brick.Length; i++)
+            {
+                int x = (int)brick.Rectangle.Top.Start.X + i;
+                int y = (int)brick.Rectangle.Top.Start.Y;
+                Console.SetCursorPosition(x, y);
+                Console.Write("▄");
+            }
+        }
+    }
+
+    private void RemoveBrick(Brick brick)
+    {
+        bricks.Remove(brick);
+
+        for (int i = 0; i < brick.Length; i++)
+        {
+            int x = (int)brick.Rectangle.Top.Start.X + i;
+            int y = (int)brick.Rectangle.Top.Start.Y;
+            Console.SetCursorPosition(x, y);
+            Console.Write(" ");
+        }
+
+        Console.Beep(1000, 100);
     }
 }

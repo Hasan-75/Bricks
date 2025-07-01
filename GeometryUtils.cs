@@ -1,4 +1,6 @@
-﻿namespace Bricks;
+﻿using Bricks.Geometry;
+
+namespace Bricks;
 
 public static class GeometryUtils
 {
@@ -37,6 +39,14 @@ public static class GeometryUtils
         double u = (double)startDiff.Cross(aVector) / crossAwithB;
 
         return t >= 0 && t <= 1 && u >= 0 && u <= 1;
+    }
+
+    public static bool DoSegmentsIntersectWithRectangle(Segment segment, Rectangle rectangle)
+    {
+        return DoSegmentsIntersect(segment, rectangle.Top) ||
+               DoSegmentsIntersect(segment, rectangle.Bottom) ||
+               DoSegmentsIntersect(segment, rectangle.Left) ||
+               DoSegmentsIntersect(segment, rectangle.Right);
     }
 
     private static bool Overlaps(int aStart, int aEnd, int bStart, int bEnd)

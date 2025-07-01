@@ -38,6 +38,15 @@ csharp_space_around_binary_operators = before_and_after
 # SA1200: Using directives should be placed correctly
 dotnet_diagnostic.SA1200.severity = suggestion
 
+# SA1024: Colons Should Be Spaced Correctly
+dotnet_diagnostic.SA1024.severity = silent
+
+# SA1025: Code should not contain multiple whitespace in a row
+dotnet_diagnostic.SA1025.severity = silent
+
+# SA1507: Code should not contain multiple blank lines in a row
+dotnet_diagnostic.SA1507.severity = silent
+
 [*.{cs,vb}]
 #### Naming styles ####
 
