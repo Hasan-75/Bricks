@@ -4,7 +4,7 @@ namespace Bricks;
 
 public static class GeometryUtils
 {
-    public static bool DoSegmentsIntersect(Segment segmentA, Segment segmentB)
+    public static bool DoSegmentsIntersect(Segment segmentA, Segment segmentB, double errorTolerance)
     {
         var aStart = segmentA.Start;
         var aVector = segmentA.End - segmentA.Start;
@@ -31,33 +31,34 @@ public static class GeometryUtils
             int t0 = startDiff.Dot(aVector);
             int t1 = t0 + bVector.Dot(aVector);
 
-            return Overlaps(t0, t1, 0, aDot);
+            return Overlaps(t0, t1, 0, aDot, errorTolerance);
         }
 
         // Segments are not parallel. Check intersection point
         double t = (double)startDiff.Cross(bVector) / crossAwithB;
         double u = (double)startDiff.Cross(aVector) / crossAwithB;
 
-        return t >= 0 && t <= 1 && u >= 0 && u <= 1;
+        return t >= -errorTolerance && t <= 1 + errorTolerance &&
+               u >= -errorTolerance && u <= 1 + errorTolerance;
     }
 
-    public static bool DoSegmentsIntersectWithRectangle(Segment segment, Rectangle rectangle)
+    public static bool DoSegmentsIntersectWithRectangle(Segment segment, Rectangle rectangle, double errorTolerance)
     {
-        return DoSegmentsIntersect(segment, rectangle.Top) ||
-               DoSegmentsIntersect(segment, rectangle.Bottom) ||
-               DoSegmentsIntersect(segment, rectangle.Left) ||
-               DoSegmentsIntersect(segment, rectangle.Right);
+        return DoSegmentsIntersect(segment, rectangle.Top,    errorTolerance) ||
+               DoSegmentsIntersect(segment, rectangle.Bottom, errorTolerance) ||
+               DoSegmentsIntersect(segment, rectangle.Left,   errorTolerance) ||
+               DoSegmentsIntersect(segment, rectangle.Right,  errorTolerance);
     }
 
-    private static bool Overlaps(int aStart, int aEnd, int bStart, int bEnd)
+    private static bool Overlaps(int aStart, int aEnd, int bStart, int bEnd, double errorTolerance)
     {
         return
             Math.Max(
                 Math.Min(aStart, aEnd),
-                Math.Min(bStart, bEnd))
+                Math.Min(bStart, bEnd)) - errorTolerance
             <=
             Math.Min(
                 Math.Max(aStart, aEnd),
-                Math.Max(bStart, bEnd));
+                Math.Max(bStart, bEnd)) + errorTolerance;
     }
 }

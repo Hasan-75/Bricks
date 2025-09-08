@@ -18,9 +18,9 @@ public class Game
         this.ball  = ball;
 
         this.bricks = CreateBricks(
-            brickSize : 2,
+            brickSize : 5,
             gap       : 2,
-            numRows   : 4,
+            numRows   : 3,
             startRow  : 2,
             boardLeft : board.Start.X + 1,
             boardRight: board.End.X - 1);
@@ -117,7 +117,7 @@ public class Game
             && ball.Position.X >= bar.StartX
             && ball.Position.X <= bar.EndX
                 ? Sprites.BAR_PIXEL
-                : Sprites.BOARD_EMPTY_SPACE_UNIT_SPRITE;
+                : Sprites.EMPTY_PIXEL;
 
         Print(prevChar);
 
@@ -125,11 +125,16 @@ public class Game
 
         var isHittingBar =
             GeometryUtils.DoSegmentsIntersect(
-                new(bar.Start, bar.End),
-                new(ball.Position, nextPosition));
+                segmentA      : new(bar.Start, bar.End),
+                segmentB      : new(ball.Position, nextPosition),
+                errorTolerance: 0);
 
         var hittingBrick = bricks
-            .FirstOrDefault(brick => GeometryUtils.DoSegmentsIntersectWithRectangle(new(ball.Position, nextPosition), brick.Rectangle));
+            .FirstOrDefault(brick =>
+                GeometryUtils.DoSegmentsIntersectWithRectangle(
+                    segment       : new(ball.Position, nextPosition),
+                    rectangle     : brick.Rectangle,
+                    errorTolerance: 0.25));
 
         if (hittingBrick is not null)
         {
@@ -159,10 +164,22 @@ public class Game
             {
                 ball.Velocity.Y *= -1;
             }
+
+            if (nextPosition.Y >= board.End.Y)
+            {
+                GameOver("You missed the ball!", GameResult.Lost);
+                return;
+            }
         }
 
         ball.Position += ball.Velocity;
         DrawBall();
+
+        if (bricks.Count == 0)
+        {
+            GameOver("Congratulations! You destroyed all bricks!", GameResult.Won);
+        }
+
     }
 
     private void MoveBarToLeft()
@@ -226,7 +243,7 @@ public class Game
                 }
                 else
                 {
-                    row.Append(Sprites.BOARD_EMPTY_SPACE_UNIT_SPRITE);
+                    row.Append(Sprites.EMPTY_PIXEL);
                 }
             }
 
@@ -273,7 +290,10 @@ public class Game
             }
         }
 
-        return bricks;
+        return bricks
+            .OrderByDescending(b => b.Rectangle.Bottom.Start.Y)
+            .ThenBy(b => b.Rectangle.Bottom.Start.X)
+            .ToList();
     }
 
     private void DrawBricks()
@@ -297,9 +317,37 @@ public class Game
         {
             int x = (int)brick.Rectangle.Top.Start.X + i;
             int y = (int)brick.Rectangle.Top.Start.Y;
-            PrintAt(Sprites.BOARD_EMPTY_SPACE_UNIT_SPRITE, x, y);
+            PrintAt(Sprites.EMPTY_PIXEL, x, y);
         }
 
         Console.Beep(1000, 100);
     }
+
+    private void GameOver(string message, GameResult gameResult)
+    {
+        Stop();
+
+        Console.SetCursorPosition(board.Center.X - message.Length / 2, board.Center.Y);
+
+        Console.ForegroundColor = gameResult switch
+        {
+            GameResult.Lost => ConsoleColor.Red,
+            GameResult.Won  => ConsoleColor.Green,
+            _               => throw new NotImplementedException($"Invalid game result {gameResult}")
+        };
+
+        Console.WriteLine(message);
+        Console.ResetColor();
+
+        Console.SetCursorPosition(board.Center.X - 12, board.Center.Y + 2);
+        Console.Write("Press any key to exit...");
+        Console.ReadKey(true);
+    }
+
+    private enum GameResult
+    {
+        Won,
+        Lost
+    }
+
 }
