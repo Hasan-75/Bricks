@@ -110,7 +110,16 @@ public class Game
     private void MoveBall()
     {
         Console.SetCursorPosition(ball.Position.X, ball.Position.Y);
-        Print(" ");
+
+        // If ball was on the bar, restore bar pixel "="
+        var prevChar =
+            ball.Position.Y == bar.CenterPosition.Y
+            && ball.Position.X >= bar.StartX
+            && ball.Position.X <= bar.EndX
+                ? Sprites.BAR_PIXEL
+                : Sprites.BOARD_EMPTY_SPACE_UNIT_SPRITE;
+
+        Print(prevChar);
 
         var nextPosition = ball.Position + ball.Velocity;
 
@@ -125,6 +134,11 @@ public class Game
         if (hittingBrick is not null)
         {
             RemoveBrick(hittingBrick);
+        }
+
+        if (isHittingBar)
+        {
+            Console.Beep(800, 100);
         }
 
         if (isHittingBar || hittingBrick is not null)
@@ -158,12 +172,9 @@ public class Game
             return;
         }
 
-        Console.SetCursorPosition(bar.CenterPosition.X, bar.CenterPosition.Y);
-        Console.CursorLeft = bar.EndX;
-        Print("  ");
+        PrintAt(Sprites.EMPTY_BAR_UNIT_SPRITE, bar.EndX - 1, bar.CenterPosition.Y);
         bar.CenterPosition.X -= 2;
-        Console.CursorLeft = bar.StartX;
-        Print("==");
+        PrintAt(Sprites.BAR_UNIT_SPRITE, bar.StartX, bar.CenterPosition.Y);
     }
 
     private void MoveBarToRight()
@@ -173,18 +184,15 @@ public class Game
             return;
         }
 
-        Console.SetCursorPosition(bar.CenterPosition.X, bar.CenterPosition.Y);
-        Console.CursorLeft = bar.StartX;
-        Print("  ");
+        PrintAt(Sprites.EMPTY_BAR_UNIT_SPRITE, bar.StartX, bar.CenterPosition.Y);
         bar.CenterPosition.X += 2;
-        Console.CursorLeft = bar.EndX;
-        Print("==");
+        PrintAt(Sprites.BAR_UNIT_SPRITE, bar.EndX - 1, bar.CenterPosition.Y);
     }
+
 
     private void DrawBall()
     {
-        Console.SetCursorPosition(ball.Position.X, ball.Position.Y);
-        Console.Write("o");
+        PrintAt(Sprites.BALL_SPRITE, ball.Position.X, ball.Position.Y);
     }
 
     private void DrawBar()
@@ -197,9 +205,9 @@ public class Game
         while (left <= right)
         {
             Console.CursorLeft = left;
-            Print("=");
+            Print(Sprites.BAR_PIXEL);
             Console.CursorLeft = right;
-            Print("=");
+            Print(Sprites.BAR_PIXEL);
             left++;
             right--;
         }
@@ -214,15 +222,16 @@ public class Game
             {
                 if (r == board.Start.Y || r >= board.End.Y || c == board.Start.X || c >= board.End.X)
                 {
-                    row.Append("*");
+                    row.Append(Sprites.BORDER_UNIT_SPRITE);
                 }
                 else
                 {
-                    row.Append(" ");
+                    row.Append(Sprites.BOARD_EMPTY_SPACE_UNIT_SPRITE);
                 }
             }
 
             Print($"{row}\n");
+
             // Console.Beep(150 * (r + 1), 10); // TODO: Fix the Beep sync
             Thread.Sleep(10);
             row.Clear();
@@ -233,6 +242,12 @@ public class Game
     {
         Console.Write(item);
         return Console.GetCursorPosition();
+    }
+
+    private static void PrintAt(string item, int x, int y)
+    {
+        Console.SetCursorPosition(x, y);
+        Console.Write(item);
     }
 
     private List<Brick> CreateBricks(int brickSize, int gap, int numRows, int startRow, int boardLeft, int boardRight)
@@ -269,8 +284,7 @@ public class Game
             {
                 int x = (int)brick.Rectangle.Top.Start.X + i;
                 int y = (int)brick.Rectangle.Top.Start.Y;
-                Console.SetCursorPosition(x, y);
-                Console.Write("▄");
+                PrintAt(Sprites.BRICK_UNIT_SPRITE, x, y);
             }
         }
     }
@@ -283,8 +297,7 @@ public class Game
         {
             int x = (int)brick.Rectangle.Top.Start.X + i;
             int y = (int)brick.Rectangle.Top.Start.Y;
-            Console.SetCursorPosition(x, y);
-            Console.Write(" ");
+            PrintAt(Sprites.BOARD_EMPTY_SPACE_UNIT_SPRITE, x, y);
         }
 
         Console.Beep(1000, 100);
