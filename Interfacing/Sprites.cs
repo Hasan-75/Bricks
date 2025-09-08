@@ -1,4 +1,4 @@
-﻿namespace Bricks;
+﻿namespace Bricks.Interfacing;
 
 public static class Sprites
 {

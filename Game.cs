@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using Bricks.Geometry;
+using Bricks.Interfacing;
 
 namespace Bricks;
 
@@ -10,12 +11,14 @@ public class Game
     private Bar bar;
     private Ball ball;
     private List<Brick> bricks;
+    private int lives;
 
-    public Game(Board board, Bar bar, Ball ball)
+    public Game(Board board, Bar bar, Ball ball, int lives)
     {
         this.board = board;
         this.bar   = bar;
         this.ball  = ball;
+        this.lives = lives;
 
         this.bricks = CreateBricks(
             brickSize : 5,
@@ -26,13 +29,22 @@ public class Game
             boardRight: board.End.X - 1);
     }
 
+    private static void ResetBallOnBar(Bar bar, Ball ball)
+    {
+        ball.Position = bar.CenterPosition - (0, 1);
+        ball.Velocity = (2, -1);
+    }
+
     public static Game InitiateGame()
     {
         var board = CreateBoard(size: (50, 25));
         var bar   = CreateBar(initialPosition: (board.Center.X, board.End.Y - 3), length: 9);
-        var ball  = CreateBall(initialPosition: bar.CenterPosition - (0, 1), initialVelocity: (2, -1));
+        var ball  = CreateBall(initialPosition: (0, 0), initialVelocity: (0, 0));
+        ResetBallOnBar(bar, ball);
 
-        return new Game(board, bar, ball);
+        var lives = 3;
+
+        return new Game(board, bar, ball, lives);
     }
 
     public void Start()
@@ -42,7 +54,17 @@ public class Game
         DrawBar();
         DrawBall();
         DrawBricks();
+        DrawLives();
         Loop();
+    }
+
+    public void Restart()
+    {
+        isRunning = false;
+        Thread.Sleep(500);
+        ResetBallOnBar(bar, ball);
+        isRunning = true;
+        Thread.Sleep(1000);
     }
 
     private static Board CreateBoard(Vector2 size) => new ()
@@ -143,7 +165,7 @@ public class Game
 
         if (isHittingBar)
         {
-            Console.Beep(800, 100);
+            PlayAudioEffect(AudioEffects.BAR_HIT);
         }
 
         if (isHittingBar || hittingBrick is not null)
@@ -167,8 +189,19 @@ public class Game
 
             if (nextPosition.Y >= board.End.Y)
             {
-                GameOver("You missed the ball!", GameResult.Lost);
-                return;
+                lives--;
+                DrawLives();
+
+                if (lives <= 0)
+                {
+                    GameOver("No lives left! Game Over!", GameResult.Lost);
+                    return;
+                }
+                else
+                {
+                    PlayAudioEffect(AudioEffects.LIFE_LOST);
+                    Restart();
+                }
             }
         }
 
@@ -181,6 +214,21 @@ public class Game
         }
 
     }
+
+    private void DrawLives()
+    {
+        Console.OutputEncoding = System.Text.Encoding.UTF8;
+        Console.SetCursorPosition(board.Start.X, board.End.Y + 1);
+        Console.Write(new string(' ', board.Size.X));
+        Console.SetCursorPosition(board.Start.X, board.End.Y + 1);
+        Console.Write("Lives: ");
+        Console.ForegroundColor = ConsoleColor.Red;
+        for (var i = 0; i < lives; i++)
+            Console.Write("♥ ");
+
+        Console.ResetColor();
+    }
+
 
     private void MoveBarToLeft()
     {
@@ -320,21 +368,29 @@ public class Game
             PrintAt(Sprites.EMPTY_PIXEL, x, y);
         }
 
-        Console.Beep(1000, 100);
+        PlayAudioEffect(AudioEffects.BRICK_HIT);
     }
 
     private void GameOver(string message, GameResult gameResult)
     {
         Stop();
 
-        Console.SetCursorPosition(board.Center.X - message.Length / 2, board.Center.Y);
-
-        Console.ForegroundColor = gameResult switch
+        if (gameResult is GameResult.Won)
         {
-            GameResult.Lost => ConsoleColor.Red,
-            GameResult.Won  => ConsoleColor.Green,
-            _               => throw new NotImplementedException($"Invalid game result {gameResult}")
-        };
+            PlayAudioEffects(AudioEffects.GAME_WON);
+            Console.ForegroundColor = ConsoleColor.Green;
+        }
+        else if (gameResult is GameResult.Lost)
+        {
+            PlayAudioEffects(AudioEffects.GAME_LOST);
+            Console.ForegroundColor = ConsoleColor.Red;
+        }
+        else
+        {
+            throw new NotImplementedException($"Invalid game result {gameResult}");
+        }
+
+        Console.SetCursorPosition(board.Center.X - message.Length / 2, board.Center.Y);
 
         Console.WriteLine(message);
         Console.ResetColor();
@@ -342,6 +398,17 @@ public class Game
         Console.SetCursorPosition(board.Center.X - 12, board.Center.Y + 2);
         Console.Write("Press any key to exit...");
         Console.ReadKey(true);
+    }
+
+    private static void PlayAudioEffect(AudioEffect audioEffect)
+    {
+        Console.Beep(audioEffect.Frequency, audioEffect.Duration);
+    }
+
+    private static void PlayAudioEffects(List<AudioEffect> audioEffectCollection)
+    {
+        foreach (var audioEffect in audioEffectCollection)
+            Console.Beep(audioEffect.Frequency, audioEffect.Duration);
     }
 
     private enum GameResult
