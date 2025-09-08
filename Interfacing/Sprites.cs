@@ -9,4 +9,5 @@ public static class Sprites
     public const string BRICK_UNIT_SPRITE     = "▄";
     public const string EMPTY_BAR_UNIT_SPRITE = "  ";
     public const string EMPTY_PIXEL           = " ";
+    public const string LIFE_SPRITE           = "♥";
 }

@@ -224,7 +224,7 @@ public class Game
         Console.Write("Lives: ");
         Console.ForegroundColor = ConsoleColor.Red;
         for (var i = 0; i < lives; i++)
-            Console.Write("♥ ");
+            Print($"{Sprites.LIFE_SPRITE} ");
 
         Console.ResetColor();
     }
