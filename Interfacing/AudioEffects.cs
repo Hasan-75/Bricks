@@ -8,21 +8,20 @@ public static class AudioEffects
     
     public static readonly List<AudioEffect> GAME_LOST = new()
     {
-        new (600, 150),
-        new (550, 120),
-        new (500, 100),
-        new (400, 180),
-        new (300, 100)
+        new (550, 100),
+        new (500, 90),
+        new (450, 110),
+        new (400, 130),
+        new (350, 100),
     };
 
     public static readonly List<AudioEffect> GAME_WON = new()
     {
-        new (700, 80),
-        new (900, 80),
-        new (1100, 80),
-        new (1200, 120),
-        new (1400, 150),
-        new (1600, 200)
+        new (800, 100),
+        new (900, 90),
+        new (1000, 110),
+        new (1100, 130),
+        new (1200, 100),
     };
 }
 public record AudioEffect(int Frequency, int Duration);
