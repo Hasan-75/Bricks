@@ -34,4 +34,4 @@ L-shape:
 </details>
 
 ### 🕹️ Video Demo
-Coming soon...
+![Bricks Demo](./Demo/Bricks.gif)
