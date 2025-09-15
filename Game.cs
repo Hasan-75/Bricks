@@ -49,6 +49,7 @@ public class Game
 
     public void Start()
     {
+        EraseBoard();
         isRunning = true;
         DrawBoard();
         DrawBar();
@@ -118,6 +119,7 @@ public class Game
         if (key is ConsoleKey.Q)
         {
             Stop();
+            EraseBoard();
         }
         else if (key is ConsoleKey.LeftArrow)
         {
@@ -127,6 +129,11 @@ public class Game
         {
             MoveBarToRight();
         }
+    }
+
+    private void EraseBoard()
+    {
+        Console.Clear();
     }
 
     private void MoveBall()
@@ -398,6 +405,7 @@ public class Game
         Console.SetCursorPosition(board.Center.X - 12, board.Center.Y + 2);
         Console.Write("Press any key to exit...");
         Console.ReadKey(true);
+        EraseBoard();
     }
 
     private static void PlayAudioEffect(AudioEffect audioEffect)
