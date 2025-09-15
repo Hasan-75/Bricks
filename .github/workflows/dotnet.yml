@@ -1,0 +1,37 @@
+name: .NET Release
+
+on:
+  push:
+    tags:
+      - "v*"   # triggers on tags like v1.0.0
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Publish
+        run: dotnet publish -c Release -r win-x64 --self-contained false -o ./publish
+
+      - name: Zip published output
+        run: zip -r Bricks-${{ github.ref_name }}.zip ./publish
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: Bricks-${{ github.ref_name }}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
