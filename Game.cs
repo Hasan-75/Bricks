@@ -21,9 +21,9 @@ public class Game
         this.lives = lives;
 
         this.bricks = CreateBricks(
-            brickSize : 5,
-            gap       : 2,
-            numRows   : 3,
+            brickSize : Random.Shared.Next(3, 6),
+            gap       : Random.Shared.Next(2, 5),
+            numRows   : Random.Shared.Next(2, 5),
             startRow  : 2,
             boardLeft : board.Start.X + 1,
             boardRight: board.End.X - 1);
@@ -163,7 +163,7 @@ public class Game
                 GeometryUtils.DoSegmentsIntersectWithRectangle(
                     segment       : new(ball.Position, nextPosition),
                     rectangle     : brick.Rectangle,
-                    errorTolerance: 0.25));
+                    errorTolerance: GetErrorTolerance(brick.Length)));
 
         if (hittingBrick is not null)
         {
@@ -417,6 +417,13 @@ public class Game
     {
         foreach (var audioEffect in audioEffectCollection)
             Console.Beep(audioEffect.Frequency, audioEffect.Duration);
+    }
+
+    private static double GetErrorTolerance(int brickSize)
+    {
+        double k = 3.0;
+        double p = 1.5;
+        return k / Math.Pow(brickSize, p);
     }
 
     private enum GameResult
