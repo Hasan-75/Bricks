@@ -8,7 +8,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    strategy:
+      matrix:
+        rid: [win-x64, linux-x64, osx-x64]   # runtime identifiers
     steps:
       - uses: actions/checkout@v4
 
@@ -23,15 +25,32 @@ jobs:
       - name: Build
         run: dotnet build --configuration Release --no-restore
 
-      - name: Publish
-        run: dotnet publish -c Release -r win-x64 --self-contained false -o ./publish
+      - name: Publish (${{ matrix.rid }})
+        run: dotnet publish -c Release -r ${{ matrix.rid }} --self-contained true -p:PublishSingleFile=true -o ./publish/${{ matrix.rid }}
 
-      - name: Zip published output
-        run: zip -r Bricks-${{ github.ref_name }}.zip ./publish
+      - name: Zip published output (${{ matrix.rid }})
+        run: |
+          cd publish/${{ matrix.rid }}
+          zip -r ../../Bricks-${{ github.ref_name }}-${{ matrix.rid }}.zip .
+
+      - name: Upload artifact (${{ matrix.rid }})
+        uses: actions/upload-artifact@v4
+        with:
+          name: Bricks-${{ github.ref_name }}-${{ matrix.rid }}
+          path: Bricks-${{ github.ref_name }}-${{ matrix.rid }}.zip
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          files: Bricks-${{ github.ref_name }}.zip
+          files: ./artifacts/**/*.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
