@@ -35,3 +35,49 @@ L-shape:
 
 ### 🕹️ Video Demo
 ![Bricks Demo](./Demo/Bricks.gif)
+---
+### ⚙️ Installation & Setup
+
+Follow these steps to get **Bricks** running on your machine.
+
+#### 📋 Prerequisites
+
+- 📦 [.NET SDK](https://dotnet.microsoft.com/download) (**.NET 8.0** or higher recommended)
+- 💻 A code editor or IDE that supports C# (Visual Studio, Visual Studio Code, Rider, etc.)  
+- 🖥️ Command-line / terminal access  
+
+#### 🚀 Steps
+
+1. **📂 Clone the repository**
+
+    ```bash
+    git clone https://github.com/Hasan-75/Bricks.git
+    cd Bricks
+    ```
+
+2. **🔄 Restore dependencies**
+
+    ```bash
+    dotnet restore
+    ```
+
+3. **🛠️ Build the project**
+
+    ```bash
+    dotnet build
+    ```
+
+4. **🎮 Run the game**
+
+    From the solution or project folder:
+
+    ```bash
+    dotnet run --project Bricks
+    ```
+
+    Or if you're inside the project directory (where the `.csproj` is):
+
+    ```bash
+    dotnet run
+    ```
+
