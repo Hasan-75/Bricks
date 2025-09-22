@@ -81,3 +81,12 @@ Follow these steps to get **Bricks** running on your machine.
     dotnet run
     ```
 
+
+
+### 🎮 How to Play
+
+- Use **Left Arrow (←)** and **Right Arrow (→)** keys to move the paddle left or right.  
+- The **ball** will bounce off the paddle and hit the bricks.  
+- **Do not let the ball fall** below the paddle. You have limited lives.  
+- **Break all the bricks** to win the game.  
+- Press **Q** at any time to quit the game.
